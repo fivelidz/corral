@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Search, PlusSquare, User, Bot, Sun, Moon } from 'lucide-react'
+import { Home, Search, PlusSquare, User, Flame, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -8,7 +8,7 @@ const NAV = [
   { to: '/',         icon: Home,       label: 'Feed'    },
   { to: '/discover', icon: Search,     label: 'Discover'},
   { to: '/create',   icon: PlusSquare, label: 'Post'    },
-  { to: '/agent',    icon: Bot,        label: 'Agent'   },
+  { to: '/heat',     icon: Flame,      label: 'Heat'    },
   { to: '/profile',  icon: User,       label: 'Profile' },
 ]
 
