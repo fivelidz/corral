@@ -1,118 +1,111 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import SearchAndFilters from "@/components/SearchAndFilters";
-import EventCard from "@/components/EventCard";
-import DemoBanner from "@/components/DemoBanner";
-import { useEvents, useRsvps } from "@/hooks/useEvents";
-import { DEMO_FRIENDS } from "@/lib/demo-data";
-import { useMemo, useState } from "react";
+import { useState, useMemo } from 'react'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import Navbar from '@/components/Navbar'
+import SearchAndFilters from '@/components/SearchAndFilters'
+import EventCard from '@/components/EventCard'
+import DemoBanner from '@/components/DemoBanner'
+import { useEvents, useRsvps } from '@/hooks/useEvents'
+import { DEMO_FRIENDS } from '@/lib/demo-data'
 
-const Index = () => {
-  const { user, loading, isDemo } = useAuth();
-  const { data: events = [], isLoading: eventsLoading } = useEvents();
-  const { data: rsvps = [] } = useRsvps();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("All");
+export default function Index() {
+  const { user, loading, isDemo } = useAuth()
+  const { data: events = [], isLoading } = useEvents()
+  const { data: rsvps = [] }            = useRsvps()
+  const [q, setQ]                       = useState('')
+  const [filter, setFilter]             = useState('All')
 
-  const feedPosts = useMemo(() => {
-    let filtered = events;
+  const posts = useMemo(() => {
+    let list = events
 
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(e =>
-        e.title.toLowerCase().includes(q) ||
-        e.location?.toLowerCase().includes(q) ||
-        e.description?.toLowerCase().includes(q)
-      );
+    if (q) {
+      const lq = q.toLowerCase()
+      list = list.filter(e =>
+        e.title.toLowerCase().includes(lq) ||
+        e.location?.toLowerCase().includes(lq) ||
+        e.description?.toLowerCase().includes(lq),
+      )
     }
 
-    if (activeFilter === "Tonight") {
-      const today = new Date().toISOString().split("T")[0];
-      filtered = filtered.filter(e => e.date === today);
-    } else if (activeFilter === "This Week") {
-      const weekOut = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(e => new Date(e.date) <= weekOut);
-    } else if (activeFilter === "Free") {
-      filtered = filtered.filter(e => !e.price || e.price === 0);
-    } else if (activeFilter !== "All") {
-      filtered = filtered.filter(e => e.tags?.includes(activeFilter.toLowerCase()));
+    if (filter === 'Tonight') {
+      const today = new Date().toISOString().split('T')[0]
+      list = list.filter(e => e.date === today)
+    } else if (filter === 'This Week') {
+      const week = new Date(Date.now() + 7 * 86400000)
+      list = list.filter(e => new Date(e.date) <= week)
+    } else if (filter === 'Free') {
+      list = list.filter(e => !e.price || e.price === 0)
+    } else if (filter !== 'All') {
+      list = list.filter(e => e.tags?.includes(filter.toLowerCase()))
     }
 
-    return filtered.map((event) => {
-      const eventRsvps = rsvps.filter(r => r.event_id === event.id);
-      const goingCount = eventRsvps.filter(r => r.status === "going").length;
-      const interestedCount = eventRsvps.filter(r => r.status === "interested").length;
-
-      // In demo mode, show some fake friends going
+    return list.map(event => {
+      const evRsvps      = rsvps.filter(r => r.event_id === event.id)
+      const goingCount   = evRsvps.filter(r => r.status === 'going').length
+      const intCount     = evRsvps.filter(r => r.status === 'interested').length
       const friendsGoing = isDemo
-        ? DEMO_FRIENDS.filter(f => eventRsvps.some(r => r.user_id === f.id)).slice(0, 3)
-        : [];
+        ? DEMO_FRIENDS.filter(f => evRsvps.some(r => r.user_id === f.id)).slice(0, 3)
+        : []
 
       return {
         id: event.id,
-        image: event.image_url || "/placeholder.svg",
+        image: event.image_url || '/placeholder.svg',
         title: event.title,
         date: event.date,
-        time: event.time || "",
-        location: event.location || "",
+        time: event.time || '',
+        location: event.location || '',
         attending: goingCount,
         friendsGoing,
         goingCount,
-        interestedCount,
+        interestedCount: intCount,
         tags: event.tags,
         price: event.price,
-      };
-    });
-  }, [events, rsvps, searchQuery, activeFilter, isDemo]);
+      }
+    })
+  }, [events, rsvps, q, filter, isDemo])
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: "hsl(var(--background))" }}>
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"
-          style={{ borderColor: "hsl(var(--primary))", borderTopColor: "transparent" }} />
-      </div>
-    );
-  }
-
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading) return <Spinner />
+  if (!user)   return <Navigate to="/login" replace />
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: "hsl(var(--background))" }}>
+    <div className="min-h-screen bg-background pb-20">
       <Navbar />
       {isDemo && <DemoBanner />}
       <main className="mx-auto max-w-2xl px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Your friends are going out
           </h1>
-          <p className="mt-1 text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <p className="mt-1 text-sm text-muted-foreground">
             See what your people are up to this week.
           </p>
         </div>
 
-        <SearchAndFilters onSearch={setSearchQuery} onFilter={setActiveFilter} />
+        <SearchAndFilters onSearch={setQ} onFilter={setFilter} />
 
-        {eventsLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"
-              style={{ borderColor: "hsl(var(--primary))", borderTopColor: "transparent" }} />
-          </div>
-        ) : feedPosts.length === 0 ? (
-          <div className="text-center py-16 space-y-2">
-            <p className="text-lg font-medium" style={{ color: "hsl(var(--foreground))" }}>Nothing here yet</p>
-            <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
-              {searchQuery ? "Try a different search" : "Events posted by people you follow will show up here"}
+        {isLoading ? (
+          <Spinner />
+        ) : posts.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="text-base font-medium text-foreground">Nothing here yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {q ? 'Try a different search' : 'Events from people you follow will appear here'}
             </p>
           </div>
         ) : (
           <div className="space-y-5">
-            {feedPosts.map(post => <EventCard key={post.id} {...post} />)}
+            {posts.map(p => <EventCard key={p.id} {...p} />)}
           </div>
         )}
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+function Spinner() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  )
+}

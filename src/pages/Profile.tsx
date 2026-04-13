@@ -1,67 +1,62 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import Navbar from "@/components/Navbar";
-import { LogOut, Settings } from "lucide-react";
+import { Navigate } from 'react-router-dom'
+import { LogOut, Settings } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import Navbar from '@/components/Navbar'
 
 export default function Profile() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth()
 
-  if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading) return null
+  if (!user)   return <Navigate to="/login" replace />
 
-  const initials = user.email?.[0].toUpperCase() ?? "?";
+  const initials = user.email?.[0].toUpperCase() ?? '?'
+  const memberSince = new Date(user.created_at ?? Date.now())
+    .toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: "hsl(var(--background))" }}>
+    <div className="min-h-screen bg-background pb-20">
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: "hsl(var(--foreground))" }}>Profile</h1>
-          <button className="rounded-full p-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">Profile</h1>
+          <button className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors">
             <Settings size={20} />
           </button>
         </div>
 
-        {/* Avatar + info */}
-        <div className="flex flex-col items-center gap-3 py-8 rounded-2xl mb-6"
-          style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-          <div className="h-20 w-20 rounded-full flex items-center justify-center text-3xl font-bold"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+        {/* Avatar card */}
+        <div className="mb-6 flex flex-col items-center gap-3 rounded-2xl border border-border bg-card py-8">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-3xl font-bold text-primary-foreground">
             {initials}
           </div>
           <div className="text-center">
-            <p className="font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-              {user.email}
-            </p>
-            <p className="text-sm mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-              Member since {new Date(user.created_at ?? Date.now()).toLocaleDateString("en-AU", { month: "long", year: "numeric" })}
-            </p>
+            <p className="font-semibold text-foreground">{user.email}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">Member since {memberSince}</p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="mb-6 grid grid-cols-3 gap-3">
           {[
-            { label: "Events going", value: "—" },
-            { label: "Interested", value: "—" },
-            { label: "Friends", value: "—" },
-          ].map(stat => (
-            <div key={stat.label} className="rounded-xl py-4 text-center"
-              style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-              <p className="text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>{stat.value}</p>
-              <p className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{stat.label}</p>
+            { label: 'Going',      value: '—' },
+            { label: 'Interested', value: '—' },
+            { label: 'Friends',    value: '—' },
+          ].map(s => (
+            <div key={s.label} className="rounded-xl border border-border bg-card py-4 text-center">
+              <p className="text-xl font-bold text-foreground">{s.value}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Sign out */}
-        <button onClick={signOut}
-          className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold"
-          style={{ backgroundColor: "hsl(var(--secondary))", color: "hsl(var(--foreground))" }}>
-          <LogOut size={16} />
-          Sign out
+        <button
+          onClick={signOut}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-3 text-sm font-semibold text-foreground hover:bg-secondary/80 transition-colors"
+        >
+          <LogOut size={16} />Sign out
         </button>
       </main>
     </div>
-  );
+  )
 }

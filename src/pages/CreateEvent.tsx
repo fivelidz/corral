@@ -1,33 +1,32 @@
-import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCreateEvent } from "@/hooks/useEvents";
-import Navbar from "@/components/Navbar";
-import { ImagePlus } from "lucide-react";
+import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { ImagePlus } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useCreateEvent } from '@/hooks/useEvents'
+import Navbar from '@/components/Navbar'
+
+const inputCls = 'w-full rounded-xl border border-border bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition-colors'
 
 export default function CreateEvent() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const createEvent = useCreateEvent();
+  const { user, loading } = useAuth()
+  const navigate          = useNavigate()
+  const createEvent       = useCreateEvent()
 
   const [form, setForm] = useState({
-    title: "",
-    description: "",
-    date: "",
-    time: "",
-    location: "",
-    price: "",
-    image_url: "",
-    tags: "",
-  });
-  const [error, setError] = useState<string | null>(null);
+    title: '', description: '', date: '', time: '',
+    location: '', price: '', image_url: '', tags: '',
+  })
+  const [error, setError] = useState<string | null>(null)
 
-  if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading) return null
+  if (!user)   return <Navigate to="/login" replace />
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
     try {
       await createEvent.mutateAsync({
         title: form.title,
@@ -37,75 +36,51 @@ export default function CreateEvent() {
         location: form.location || undefined,
         price: form.price ? parseFloat(form.price) : null,
         image_url: form.image_url || undefined,
-        tags: form.tags ? form.tags.split(",").map(t => t.trim().toLowerCase()) : undefined,
+        tags: form.tags ? form.tags.split(',').map(t => t.trim().toLowerCase()) : undefined,
         created_by: user.id,
-      });
-      navigate("/");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to create event");
+      })
+      navigate('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create event')
     }
-  };
-
-  const inputStyle = {
-    backgroundColor: "hsl(var(--secondary))",
-    color: "hsl(var(--foreground))",
-    border: "1px solid hsl(var(--border))",
-  };
+  }
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: "hsl(var(--background))" }}>
+    <div className="min-h-screen bg-background pb-20">
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 py-6">
-        <h1 className="text-2xl font-bold tracking-tight mb-6" style={{ color: "hsl(var(--foreground))" }}>
-          Post an event
-        </h1>
+        <h1 className="mb-6 text-2xl font-bold tracking-tight text-foreground">Post an event</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Image placeholder */}
-          <div className="rounded-2xl h-40 flex flex-col items-center justify-center gap-2 cursor-pointer"
-            style={{ backgroundColor: "hsl(var(--secondary))", border: "2px dashed hsl(var(--border))" }}>
-            <ImagePlus size={28} style={{ color: "hsl(var(--muted-foreground))" }} />
-            <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Add event photo</span>
+          {/* Image drop zone */}
+          <div className="flex h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-secondary">
+            <ImagePlus size={28} className="text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Add event photo</span>
           </div>
 
-          <input type="text" placeholder="Event title *" required
-            value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            className="w-full rounded-xl px-4 py-3 text-sm outline-none" style={inputStyle} />
-
-          <textarea placeholder="Description" rows={3}
-            value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none" style={inputStyle} />
+          <input type="text"   placeholder="Event title *" required value={form.title}       onChange={set('title')}       className={inputCls} />
+          <textarea            placeholder="Description"            value={form.description} onChange={set('description')} className={`${inputCls} resize-none`} rows={3} />
 
           <div className="grid grid-cols-2 gap-3">
-            <input type="date" required
-              value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none" style={inputStyle} />
-            <input type="time"
-              value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none" style={inputStyle} />
+            <input type="date" required value={form.date} onChange={set('date')} className={inputCls} />
+            <input type="time"          value={form.time} onChange={set('time')} className={inputCls} />
           </div>
 
-          <input type="text" placeholder="Location / Venue"
-            value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-            className="w-full rounded-xl px-4 py-3 text-sm outline-none" style={inputStyle} />
+          <input type="text"   placeholder="Location / Venue"                      value={form.location}  onChange={set('location')}  className={inputCls} />
+          <input type="number" placeholder="Ticket price (leave blank if free)"    value={form.price}     onChange={set('price')}     className={inputCls} />
+          <input type="text"   placeholder="Tags — comma separated: music, doof…"  value={form.tags}      onChange={set('tags')}      className={inputCls} />
 
-          <input type="number" placeholder="Ticket price (leave blank if free)"
-            value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-            className="w-full rounded-xl px-4 py-3 text-sm outline-none" style={inputStyle} />
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <input type="text" placeholder="Tags (comma separated, e.g. music, doof, rave)"
-            value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))}
-            className="w-full rounded-xl px-4 py-3 text-sm outline-none" style={inputStyle} />
-
-          {error && <p className="text-sm" style={{ color: "hsl(var(--destructive))" }}>{error}</p>}
-
-          <button type="submit" disabled={createEvent.isPending}
-            className="w-full rounded-xl py-3 text-sm font-semibold transition-all disabled:opacity-50"
-            style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-            {createEvent.isPending ? "Posting..." : "Post event"}
+          <button
+            type="submit"
+            disabled={createEvent.isPending}
+            className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-50"
+          >
+            {createEvent.isPending ? 'Posting…' : 'Post event'}
           </button>
         </form>
       </main>
     </div>
-  );
+  )
 }

@@ -1,43 +1,85 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 95%;
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 270 70% 65%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 270 70% 65%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 16%;
-    --input: 0 0% 16%;
-    --ring: 270 70% 65%;
-    --radius: 0.75rem;
-  }
+/* ── Corral design tokens ───────────────────────────────────────────────────
+   Defined as a Tailwind v4 @theme so they compile to real utility classes:
+   bg-background, text-foreground, border-border, text-primary, etc.
+   Dark-only app — no light/dark switching needed.
+──────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  --color-background:          oklch(10% 0 0);
+  --color-foreground:          oklch(95% 0 0);
+
+  --color-card:                oklch(14% 0 0);
+  --color-card-foreground:     oklch(95% 0 0);
+
+  --color-primary:             oklch(65% 0.18 300);
+  --color-primary-foreground:  oklch(98% 0 0);
+
+  --color-secondary:           oklch(20% 0 0);
+  --color-secondary-foreground:oklch(90% 0 0);
+
+  --color-muted:               oklch(20% 0 0);
+  --color-muted-foreground:    oklch(55% 0 0);
+
+  --color-accent:              oklch(65% 0.18 300);
+  --color-accent-foreground:   oklch(98% 0 0);
+
+  --color-border:              oklch(22% 0 0);
+  --color-input:               oklch(22% 0 0);
+
+  --color-destructive:         oklch(55% 0.22 25);
+  --color-destructive-foreground: oklch(98% 0 0);
+
+  --radius-sm:   0.5rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-xl:   1.25rem;
+  --radius-2xl:  1.5rem;
+  --radius-full: 9999px;
 }
 
+/* ── Base reset ─────────────────────────────────────────────────────────── */
+
 @layer base {
-  * {
+  *, *::before, *::after {
     box-sizing: border-box;
-    border-color: hsl(var(--border));
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     margin: 0;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
   #root {
     min-height: 100svh;
+    isolation: isolate;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar on filter chips etc */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Date/time input colour fix in dark mode */
+  input[type="date"],
+  input[type="time"] {
+    color-scheme: dark;
   }
 }
