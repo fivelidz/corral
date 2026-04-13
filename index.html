@@ -2,13 +2,54 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- PWA / installability -->
+    <link rel="manifest" href="/corral/manifest.json" />
+    <meta name="theme-color" content="#8b5cf6" />
+
+    <!-- iOS home screen install -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Corral" />
+    <link rel="apple-touch-icon" href="/corral/icons/apple-touch-icon.png" />
+
+    <!-- Android / Chrome -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="icon" type="image/svg+xml" href="/corral/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>corral</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="/corral/icons/icon-192.png" />
+
+    <!-- SEO -->
+    <title>Corral — Find your people</title>
+    <meta name="description" content="Find your people. Find your events. Social app for live music, doofs, raves and nightlife." />
+
+    <!-- Open Graph — link previews in WhatsApp, iMessage, Slack etc -->
+    <meta property="og:title" content="Corral" />
+    <meta property="og:description" content="Find your people. Find your events." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fivelidz.github.io/corral/" />
+    <meta property="og:image" content="https://fivelidz.github.io/corral/icons/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Misc mobile -->
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    </style>
     <script type="module" crossorigin src="/corral/assets/index-Bchj0vtZ.js"></script>
     <link rel="stylesheet" crossorigin href="/corral/assets/index-BEXnwTy0.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/corral/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
