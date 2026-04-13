@@ -23,7 +23,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter basename="/corral">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
