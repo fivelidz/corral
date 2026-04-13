@@ -3,11 +3,13 @@ import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchAndFilters from "@/components/SearchAndFilters";
 import EventCard from "@/components/EventCard";
+import DemoBanner from "@/components/DemoBanner";
 import { useEvents, useRsvps } from "@/hooks/useEvents";
+import { DEMO_FRIENDS } from "@/lib/demo-data";
 import { useMemo, useState } from "react";
 
 const Index = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isDemo } = useAuth();
   const { data: events = [], isLoading: eventsLoading } = useEvents();
   const { data: rsvps = [] } = useRsvps();
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,8 +31,7 @@ const Index = () => {
       const today = new Date().toISOString().split("T")[0];
       filtered = filtered.filter(e => e.date === today);
     } else if (activeFilter === "This Week") {
-      const now = new Date();
-      const weekOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const weekOut = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       filtered = filtered.filter(e => new Date(e.date) <= weekOut);
     } else if (activeFilter === "Free") {
       filtered = filtered.filter(e => !e.price || e.price === 0);
@@ -39,9 +40,14 @@ const Index = () => {
     }
 
     return filtered.map((event) => {
-      const eventRsvps = rsvps.filter((r) => r.event_id === event.id);
-      const goingCount = eventRsvps.filter((r) => r.status === "going").length;
-      const interestedCount = eventRsvps.filter((r) => r.status === "interested").length;
+      const eventRsvps = rsvps.filter(r => r.event_id === event.id);
+      const goingCount = eventRsvps.filter(r => r.status === "going").length;
+      const interestedCount = eventRsvps.filter(r => r.status === "interested").length;
+
+      // In demo mode, show some fake friends going
+      const friendsGoing = isDemo
+        ? DEMO_FRIENDS.filter(f => eventRsvps.some(r => r.user_id === f.id)).slice(0, 3)
+        : [];
 
       return {
         id: event.id,
@@ -51,15 +57,14 @@ const Index = () => {
         time: event.time || "",
         location: event.location || "",
         attending: goingCount,
-        friendsGoing: [] as { id: string; initials: string; name: string }[],
+        friendsGoing,
         goingCount,
         interestedCount,
-        intent: "going" as const,
         tags: event.tags,
         price: event.price,
       };
     });
-  }, [events, rsvps, searchQuery, activeFilter]);
+  }, [events, rsvps, searchQuery, activeFilter, isDemo]);
 
   if (loading) {
     return (
@@ -75,6 +80,7 @@ const Index = () => {
   return (
     <div className="min-h-screen pb-20" style={{ backgroundColor: "hsl(var(--background))" }}>
       <Navbar />
+      {isDemo && <DemoBanner />}
       <main className="mx-auto max-w-2xl px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
@@ -101,9 +107,7 @@ const Index = () => {
           </div>
         ) : (
           <div className="space-y-5">
-            {feedPosts.map((post) => (
-              <EventCard key={post.id} {...post} />
-            ))}
+            {feedPosts.map(post => <EventCard key={post.id} {...post} />)}
           </div>
         )}
       </main>

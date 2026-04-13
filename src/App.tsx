@@ -9,6 +9,7 @@ import CreateEvent from "@/pages/CreateEvent";
 import EventDetail from "@/pages/EventDetail";
 import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
+import Agent from "@/pages/Agent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,7 @@ function App() {
             <Route path="/event/:id" element={<EventDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/agent" element={<Agent />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
