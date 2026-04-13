@@ -1,35 +1,31 @@
 @import "tailwindcss";
 
-/* ── Corral design tokens ───────────────────────────────────────────────────
-   Defined as a Tailwind v4 @theme so they compile to real utility classes:
-   bg-background, text-foreground, border-border, text-primary, etc.
-   Dark-only app — no light/dark switching needed.
+/* ── Corral design tokens ────────────────────────────────────────────────────
+   Tailwind v4 @theme — compiles to bg-background, text-primary, etc.
+   Light and dark variants defined via data-theme attribute on <html>.
+   Default: dark.
 ──────────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  --color-background:          oklch(10% 0 0);
-  --color-foreground:          oklch(95% 0 0);
-
-  --color-card:                oklch(14% 0 0);
-  --color-card-foreground:     oklch(95% 0 0);
-
-  --color-primary:             oklch(65% 0.18 300);
-  --color-primary-foreground:  oklch(98% 0 0);
-
-  --color-secondary:           oklch(20% 0 0);
-  --color-secondary-foreground:oklch(90% 0 0);
-
-  --color-muted:               oklch(20% 0 0);
-  --color-muted-foreground:    oklch(55% 0 0);
-
-  --color-accent:              oklch(65% 0.18 300);
-  --color-accent-foreground:   oklch(98% 0 0);
-
-  --color-border:              oklch(22% 0 0);
-  --color-input:               oklch(22% 0 0);
-
-  --color-destructive:         oklch(55% 0.22 25);
+  /* Shared tokens (same in both themes) */
+  --color-primary:              oklch(65% 0.18 300);
+  --color-primary-foreground:   oklch(98% 0 0);
+  --color-accent:               oklch(65% 0.18 300);
+  --color-accent-foreground:    oklch(98% 0 0);
+  --color-destructive:          oklch(55% 0.22 25);
   --color-destructive-foreground: oklch(98% 0 0);
+
+  /* Dark theme defaults */
+  --color-background:           oklch(10% 0 0);
+  --color-foreground:           oklch(95% 0 0);
+  --color-card:                 oklch(14% 0 0);
+  --color-card-foreground:      oklch(95% 0 0);
+  --color-secondary:            oklch(20% 0 0);
+  --color-secondary-foreground: oklch(90% 0 0);
+  --color-muted:                oklch(20% 0 0);
+  --color-muted-foreground:     oklch(55% 0 0);
+  --color-border:               oklch(22% 0 0);
+  --color-input:                oklch(22% 0 0);
 
   --radius-sm:   0.5rem;
   --radius-md:   0.75rem;
@@ -39,16 +35,27 @@
   --radius-full: 9999px;
 }
 
-/* ── Base reset ─────────────────────────────────────────────────────────── */
+/* ── Light theme overrides ───────────────────────────────────────────────── */
+
+html[data-theme="light"] {
+  --color-background:           oklch(99% 0 0);
+  --color-foreground:           oklch(12% 0 0);
+  --color-card:                 oklch(96% 0 0);
+  --color-card-foreground:      oklch(12% 0 0);
+  --color-secondary:            oklch(92% 0 0);
+  --color-secondary-foreground: oklch(20% 0 0);
+  --color-muted:                oklch(92% 0 0);
+  --color-muted-foreground:     oklch(50% 0 0);
+  --color-border:               oklch(85% 0 0);
+  --color-input:                oklch(85% 0 0);
+}
+
+/* ── Base reset ──────────────────────────────────────────────────────────── */
 
 @layer base {
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
-  html {
-    -webkit-text-size-adjust: 100%;
-  }
+  html { -webkit-text-size-adjust: 100%; }
 
   body {
     margin: 0;
@@ -57,29 +64,19 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  #root {
-    min-height: 100svh;
-    isolation: isolate;
-  }
+  #root { min-height: 100svh; isolation: isolate; }
 
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
-  }
+  html { scroll-behavior: smooth; }
 
-  /* Hide scrollbar on filter chips etc */
-  .scrollbar-none {
-    scrollbar-width: none;
-  }
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 
-  /* Date/time input colour fix in dark mode */
   input[type="date"],
-  input[type="time"] {
-    color-scheme: dark;
-  }
+  input[type="time"] { color-scheme: dark; }
+
+  html[data-theme="light"] input[type="date"],
+  html[data-theme="light"] input[type="time"] { color-scheme: light; }
 }

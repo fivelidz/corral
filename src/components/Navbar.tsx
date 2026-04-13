@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Search, PlusSquare, User, Bot } from 'lucide-react'
+import { Home, Search, PlusSquare, User, Bot, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const NAV = [
   { to: '/',         icon: Home,       label: 'Feed'    },
@@ -13,7 +14,8 @@ const NAV = [
 
 export default function Navbar() {
   const { pathname } = useLocation()
-  const { user } = useAuth()
+  const { user }     = useAuth()
+  const { theme, toggle } = useTheme()
 
   return (
     <>
@@ -23,11 +25,21 @@ export default function Navbar() {
           <Link to="/" className="text-xl font-bold tracking-tight text-primary">
             corral
           </Link>
-          {user && (
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
-              {user.email?.[0].toUpperCase() ?? '?'}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Theme toggle */}
+            <button
+              onClick={toggle}
+              className="rounded-full p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            {user && (
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                {user.email?.[0].toUpperCase() ?? '?'}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
