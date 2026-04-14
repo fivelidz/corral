@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Search, PlusSquare, User, Flame, Sun, Moon } from 'lucide-react'
+import { Home, Search, PlusSquare, Flame, Sun, Moon, Network } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -8,8 +8,8 @@ const NAV = [
   { to: '/',         icon: Home,       label: 'Feed'    },
   { to: '/discover', icon: Search,     label: 'Discover'},
   { to: '/create',   icon: PlusSquare, label: 'Post'    },
+  { to: '/friends',  icon: Network,    label: 'Web'     },
   { to: '/heat',     icon: Flame,      label: 'Heat'    },
-  { to: '/profile',  icon: User,       label: 'Profile' },
 ]
 
 export default function Navbar() {
@@ -35,9 +35,9 @@ export default function Navbar() {
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             {user && (
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
-                {user.email?.[0].toUpperCase() ?? '?'}
-              </div>
+              <Link to="/profile" className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                {(user.phone ?? user.email ?? '?')[0].toUpperCase()}
+              </Link>
             )}
           </div>
         </div>

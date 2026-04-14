@@ -12,6 +12,7 @@ import Profile       from '@/pages/Profile'
 import Notifications from '@/pages/Notifications'
 import Agent         from '@/pages/Agent'
 import Heat          from '@/pages/Heat'
+import FriendWeb     from '@/pages/FriendWeb'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/agent"       element={<Agent />} />
               <Route path="/heat"        element={<Heat />} />
+              <Route path="/friends"     element={<FriendWeb />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>
