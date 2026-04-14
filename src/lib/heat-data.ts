@@ -405,6 +405,125 @@ export const SYDNEY_VENUES: Venue[] = [
   },
 ]
 
+// ── Progressive demographics ──────────────────────────────────────────────────
+// What you share determines what you see.
+// disclosureScore 0–5 (each boolean pref adds 1):
+//   share_age, share_gender, share_suburb, share_music, share_vibe
+
+import type { VenueInsights, LockedDimension, UserHeatPrefs } from '@/types'
+
+const ALL_LOCKED: LockedDimension[] = [
+  {
+    dimension: 'age',
+    label: 'Age breakdown',
+    unlock: 'Share your age range to unlock',
+    prefsKey: 'share_age',
+  },
+  {
+    dimension: 'suburb',
+    label: 'Where people are coming from',
+    unlock: 'Share your home suburb to unlock',
+    prefsKey: 'share_suburb',
+  },
+  {
+    dimension: 'music',
+    label: 'Music taste breakdown',
+    unlock: 'Share your music preferences to unlock',
+    prefsKey: 'share_music',
+  },
+  {
+    dimension: 'vibe',
+    label: 'Vibe ratings',
+    unlock: 'Submit vibe ratings after events to unlock',
+    prefsKey: 'share_vibe',
+  },
+  {
+    dimension: 'gender',
+    label: 'Gender split',
+    unlock: 'Share your gender to unlock',
+    prefsKey: 'share_gender',
+  },
+]
+
+/**
+ * Returns what a user can see about a venue, gated by their disclosure score.
+ * This is the core mechanic: the more you share, the more you see.
+ */
+export function getVenueInsights(venue: Venue, prefs: UserHeatPrefs | null): VenueInsights {
+  const score = prefs?.disclosure_score ?? 0
+
+  const locked: LockedDimension[] = []
+  if (!prefs?.share_age)    locked.push(ALL_LOCKED[0])
+  if (!prefs?.share_suburb) locked.push(ALL_LOCKED[1])
+  if (!prefs?.share_music)  locked.push(ALL_LOCKED[2])
+  if (!prefs?.share_vibe)   locked.push(ALL_LOCKED[3])
+  if (!prefs?.share_gender) locked.push(ALL_LOCKED[4])
+
+  const base: VenueInsights = {
+    heatScore:        venue.heatScore,
+    isOpen:           venue.isOpen,
+    currentUsers:     venue.currentUsers,
+    capacity:         venue.capacity,
+    lockedDimensions: locked,
+  }
+
+  // Score >= 1: capacity %
+  if (score >= 1) {
+    base.capacityPct = Math.round((venue.currentUsers / venue.capacity) * 100)
+  }
+
+  // Score >= 2: age breakdown (requires share_age)
+  if (prefs?.share_age) {
+    base.ageGroups = venue.demographics.ageGroups
+  }
+
+  // Score >= 3: suburb origin (requires share_suburb)
+  if (prefs?.share_suburb) {
+    base.topSuburbs = venue.demographics.topSuburbs
+  }
+
+  // Score >= 4: genre breakdown (requires share_music)
+  // For now genre comes from the venue tags — real version aggregates from user profiles
+  if (prefs?.share_music) {
+    base.genreBreakdown = venue.genre.map((g, i) => ({
+      genre: g,
+      // Simulated distribution — real version: aggregate from attending users' scene_tags
+      pct: Math.round(100 / venue.genre.length + (i % 2 === 0 ? 8 : -8)),
+    }))
+  }
+
+  // Score >= 5: vibe ratings + gender (requires share_vibe + share_gender)
+  if (prefs?.share_vibe) {
+    base.vibeRatings = venue.demographics.vibeRatings
+  }
+  if (prefs?.share_gender) {
+    base.genderSplit = venue.demographics.genderSplit
+  }
+
+  return base
+}
+
+/**
+ * Demo prefs for testing different disclosure levels.
+ */
+export const DEMO_PREFS: Record<string, UserHeatPrefs> = {
+  nothing: {
+    user_id: 'demo', share_age: false, share_gender: false,
+    share_suburb: false, share_music: false, share_vibe: false,
+    disclosure_score: 0,
+  },
+  some: {
+    user_id: 'demo', share_age: true, share_gender: false,
+    share_suburb: true, share_music: false, share_vibe: false,
+    disclosure_score: 2,
+  },
+  full: {
+    user_id: 'demo', share_age: true, share_gender: true,
+    share_suburb: true, share_music: true, share_vibe: true,
+    disclosure_score: 5,
+  },
+}
+
 // ── Heatmap points — lat/lng/intensity for all venue activity ─────────────────
 // Plus scattered individual "user" points around each venue
 

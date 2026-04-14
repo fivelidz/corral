@@ -368,6 +368,63 @@ begin;
 commit;
 
 -- ══════════════════════════════════════════════════════════════════════════════
+-- SCRAPED EVENTS TRACKING
+-- Records events that were auto-imported by the scraper.
+-- Used for deduplication across scraper runs.
+-- ══════════════════════════════════════════════════════════════════════════════
+create table if not exists public.scraped_events (
+  id            uuid        primary key default uuid_generate_v4(),
+  event_id      uuid        references public.events(id) on delete cascade,
+  source        text        not null,          -- 'eventbrite', 'ra', 'humanitix', 'ical'
+  source_id     text        not null,          -- original ID from the source
+  source_url    text,                          -- original listing URL
+  fingerprint   text        not null unique,   -- SHA-256(source:source_id)
+  scraped_at    timestamptz default now()
+);
+create index if not exists scraped_events_fingerprint_idx on public.scraped_events(fingerprint);
+create index if not exists scraped_events_source_idx      on public.scraped_events(source);
+comment on table public.scraped_events is
+  'Tracks events imported by the auto-scraper. fingerprint = SHA-256(source:source_id) for dedup.';
+
+-- RLS: service role only (scraper uses service key, not anon)
+alter table public.scraped_events enable row level security;
+-- No user-facing policies — scraper bypasses RLS with service key
+
+-- ══════════════════════════════════════════════════════════════════════════════
+-- USER DEMOGRAPHICS (progressive disclosure model)
+-- Users unlock demographic insights proportional to what they've shared.
+-- The more you put in, the more you see about others at venues.
+-- ══════════════════════════════════════════════════════════════════════════════
+
+-- What each user has opted to share for Heat demographics
+create table if not exists public.user_heat_prefs (
+  user_id           uuid        primary key references public.profiles(id) on delete cascade,
+
+  -- Each field is opt-in. NULL = not shared. Set = shared + unlocks that dimension.
+  share_age         boolean     default false,   -- shares age range for Heat demographics
+  share_gender      boolean     default false,   -- shares gender for Heat demographics
+  share_suburb      boolean     default false,   -- shares home suburb for Heat demographics
+  share_music       boolean     default false,   -- shares music tastes for Heat demographics
+  share_vibe        boolean     default false,   -- submits vibe ratings after events
+
+  -- Derived: how many dimensions have they shared?
+  -- Computed as: share_age::int + share_gender::int + share_suburb::int + share_music::int + share_vibe::int
+  -- Used to gate what they can see: 0=nothing, 1=basic crowd, 2=age, 3=+suburb, 4=+music, 5=full
+  disclosure_score  smallint    generated always as (
+    share_age::int + share_gender::int + share_suburb::int + share_music::int + share_vibe::int
+  ) stored,
+
+  updated_at        timestamptz default now()
+);
+comment on table public.user_heat_prefs is
+  'Controls which demographic dimensions a user shares (and therefore can see). '
+  'Progressive model: disclosure_score 0-5 gates what Heat shows you. '
+  'Share nothing = see nothing. Share everything = see full crowd demographics.';
+
+alter table public.user_heat_prefs enable row level security;
+create policy "heat_prefs_own" on public.user_heat_prefs for all using (auth.uid() = user_id);
+
+-- ══════════════════════════════════════════════════════════════════════════════
 -- STORAGE BUCKETS
 -- Run in Supabase dashboard > Storage or via API
 -- ══════════════════════════════════════════════════════════════════════════════
